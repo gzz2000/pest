@@ -90,6 +90,44 @@ impl<'i, R: RuleType> Pairs<'i, R> {
         }
     }
 
+    /// Captures a (slice) range defined by the starting position of the first token `Pair`
+    /// and the ending position of the last token `Pair` of the `Pairs`. This also captures
+    /// the input between those two token `Pair`s.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use std::rc::Rc;
+    /// # use pest;
+    /// # #[allow(non_camel_case_types)]
+    /// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+    /// enum Rule {
+    ///     a,
+    ///     b
+    /// }
+    ///
+    /// let input = "a b";
+    /// let pairs = pest::state(input, |state| {
+    ///     // generating Token pairs with Rule::a and Rule::b ...
+    /// #     state.rule(Rule::a, |s| s.match_string("a")).and_then(|s| s.skip(1))
+    /// #         .and_then(|s| s.rule(Rule::b, |s| s.match_string("b")))
+    /// }).unwrap();
+    ///
+    /// assert_eq!(pairs.as_range(), 0..3);
+    /// ```
+    #[inline]
+    pub fn as_range(&self) -> std::ops::Range<usize> {
+        if self.start < self.end {
+            let start = self.pos(self.start);
+            let end = self.pos(self.end - 1);
+            // Generated positions always come from Positions and are UTF-8 borders.
+            start..end
+        } else {
+            let end = self.pos(self.end - 1);
+            end..end
+        }
+    }
+
     /// Captures inner token `Pair`s and concatenates resulting `&str`s. This does not capture
     /// the input between token `Pair`s.
     ///

@@ -120,6 +120,36 @@ impl<'i, R: RuleType> Pair<'i, R> {
         &self.input[start..end]
     }
 
+    /// Captures a (slice) range defined by the token `Pair`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use std::rc::Rc;
+    /// # use pest;
+    /// # #[allow(non_camel_case_types)]
+    /// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+    /// enum Rule {
+    ///     ab
+    /// }
+    ///
+    /// let input = "ab";
+    /// let pair = pest::state(input, |state| {
+    ///     // generating Token pair with Rule::ab ...
+    /// #     state.rule(Rule::ab, |s| s.match_string("ab"))
+    /// }).unwrap().next().unwrap();
+    ///
+    /// assert_eq!(pair.as_range(), 0..2);
+    /// ```
+    #[inline]
+    pub fn as_range(&self) -> std::ops::Range<usize> {
+        let start = self.pos(self.start);
+        let end = self.pos(self.pair());
+
+        // Generated positions always come from Positions and are UTF-8 borders.
+        start..end
+    }
+
     /// Returns the `Span` defined by the `Pair`, consuming it.
     ///
     /// # Examples
